@@ -58,7 +58,7 @@ class TestSetMoaModelsPreservesUndeclaredKeys:
 
         saved_cfg = {}
 
-        def fake_load_config():
+        def fake_read_raw_config():
             return dict(existing_cfg)  # shallow copy
 
         def fake_save_config(cfg, **_kwargs):
@@ -66,8 +66,11 @@ class TestSetMoaModelsPreservesUndeclaredKeys:
 
         payload = _base_payload()
 
+        # The save reads the RAW config (not the default-expanded ``load_config``
+        # snapshot) because preset deletion needs a full-file write: a partial
+        # ``merge_existing`` save deep-merges and resurrects omitted presets.
         with (
-            patch("hermes_cli.config.load_config", side_effect=fake_load_config),
+            patch("hermes_cli.config.read_raw_config", side_effect=fake_read_raw_config),
             patch("hermes_cli.config.save_config", side_effect=fake_save_config),
             patch("hermes_cli.web_server_profiles._profile_scope"),
         ):
